@@ -15,6 +15,7 @@ jobs:
     outputs:
       tags: ${{ steps.get-tags.outputs.tags }}
       tags-length: ${{ steps.get-tags-length.outputs.length }}
+      no-tags: ${{ steps.show-tags.outputs.no-tags }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -34,16 +35,20 @@ jobs:
         run: |
           echo "length=$(echo '${{ steps.get-tags.outputs.tags }}' | jq length)" >> $GITHUB_OUTPUT
       - name: Show tags
+        id: show-tags
         run: |
           if [ ${{ steps.get-tags-length.outputs.length }} -eq 0 ]; then
+            echo "no-tags=true" >> $GITHUB_OUTPUT
             echo "No new tags found"
           else
+            echo "no-tags=false" >> $GITHUB_OUTPUT
             echo "Found ${{ steps.get-tags-length.outputs.length }} tags"
             echo "${{ steps.get-tags.outputs.tags }}"
           fi
 
   process-tag:
     needs: get-tags
+    if: needs.get-tags.outputs.no-tags == 'false'
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
