@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.get-tags.outputs.tags }}
+      tags-length: ${{ steps.get-tags-length.outputs.length }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,14 +30,20 @@ jobs:
       - name: Get length of tags
         id: get-tags-length
         run: |
-          echo "length=$(echo "${{ steps.get-tags.outputs.tags }}" | jq length)" >> $GITHUB_OUTPUT
+          echo "length=$(echo '${{ steps.get-tags.outputs.tags }}' | jq length)" >> $GITHUB_OUTPUT
       - name: Show tags
         run: |
-          echo "Will process ${{ steps.get-tags-length.outputs.length }} tags: ${{ steps.get-tags.outputs.tags }}"
+          if [ ${{ steps.get-tags-length.outputs.length }} -eq 0 ]; then
+            echo "No new tags found"
+          else
+            echo "Found ${{ steps.get-tags-length.outputs.length }} tags"
+            echo "${{ steps.get-tags.outputs.tags }}"
+          fi
 
   process-tag:
     needs: get-tags
     runs-on: ubuntu-latest
+    if:
     strategy:
       max-parallel: 1
       matrix:
