@@ -45,7 +45,7 @@ jobs:
   process-tag:
     needs: get-tags
     runs-on: ubuntu-latest
-    if: ${{ needs.get-tags.outputs.tags-length }} > 0
+    if: ${{ needs.get-tags.outputs.tags-length }} != '0' || ${{ needs.get-tags.outputs.tags-length }} != 0
     strategy:
       max-parallel: 1
       matrix:
