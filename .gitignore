@@ -14,3 +14,4 @@ src/daisy-untailwind/**/*.js
 src/daisy-untailwind/**/*.cjs
 src/daisy-untailwind/**/*.mjs
 daisy-tags.txt
+!postcss.config.js
