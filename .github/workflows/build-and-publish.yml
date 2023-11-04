@@ -85,12 +85,6 @@ jobs:
         run: |
           npm run build:minify
 
-      - name: Checkout daisy master
-        run: |
-          cd daisy-src
-          git checkout master
-          cd ..
-
       - name: Update processed tag
         run: |
           echo ${{ matrix.tags }} >> ${{ env.SKIP_TAGS_FILE }}
@@ -110,6 +104,12 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add -A
           git commit -m "[skip actions] Update daisy to ${{ matrix.tags }}"
+
+      - name: Checkout daisy master
+        run: |
+          cd daisy-src
+          git checkout master
+          cd ..
 
       - name: Tag
         run: |
