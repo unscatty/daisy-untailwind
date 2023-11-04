@@ -2,10 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 3.8.2 (2023-09-30)
+
 ### 3.8.1 (2023-09-27)
 
 
 ### Bug Fixes
+
+* disable input outline when there's an `<input>` tag inside a `.input` wrapper
+
+* add `:focus-within` style to `.input` (#2363)
 
 * [#2360](https://github.com/saadeghi/daisyui/issues/2360) ([20a8f62](https://github.com/saadeghi/daisyui/commit/20a8f62c8b303a04dc4b07c8e2e6848d52d62799))
 
