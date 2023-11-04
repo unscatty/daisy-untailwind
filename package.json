@@ -1,6 +1,6 @@
 {
   "name": "daisy-untailwind",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "description": "Daisy but without being transformed by Tailwind",
   "repository": "https://github.com/unscatty/daisy-untailwind",
   "author": "Carlos Aguilera",
