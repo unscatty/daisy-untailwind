@@ -1,0 +1,16 @@
+node_modules
+coverage
+dist
+types
+.vscode
+.DS_Store
+.eslintcache
+*.log*
+*.conf*
+*.env*
+untailwind/
+untailwind-js/
+src/daisy-untailwind/**/*.js
+src/daisy-untailwind/**/*.cjs
+src/daisy-untailwind/**/*.mjs
+daisy-tags.txt

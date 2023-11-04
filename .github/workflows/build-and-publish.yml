@@ -1,0 +1,127 @@
+on:
+  push:
+    branches:
+      - main
+env:
+  SKIP_TAGS_FILE: skip-tags.txt
+  FETCHED_TAGS_FILE: daisy-tags.txt
+  TAGS_PATTERN: v3*
+
+jobs:
+  get-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.get-tags.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Get daisy tags
+        id: get-tags
+        run: |
+          cd daisy-src
+          git fetch --tags
+          git tag --list -i '${{ env.TAGS_PATTERN }}' --sort=version:refname > ../${{ env.FETCHED_TAGS_FILE }}
+          cd ..
+          echo "tags=$(diff --new-line-format='' --unchanged-line-format='' ${{ env.FETCHED_TAGS_FILE }} ${{ env.SKIP_TAGS_FILE }} | jq -ncR '[inputs | select(length > 0)]')" >> $GITHUB_OUTPUT
+      - name: Get length of tags
+        id: get-tags-length
+        run: |
+          echo "length=$(echo "${{ steps.get-tags.outputs.tags }}" | jq length)" >> $GITHUB_OUTPUT
+      - name: Show tags
+        run: |
+          echo "Will process ${{ steps.get-tags-length.outputs.length }} tags: ${{ steps.get-tags.outputs.tags }}"
+
+  process-tag:
+    needs: get-tags
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        tags: ${{ fromJson(needs.get-tags.outputs.tags) }}
+    steps:
+      - run: |
+          echo "Processing tag: ${{ matrix.tags }}"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Pull changes main
+        run: git pull --rebase
+
+      - name: Switch to daisy tag
+        run: |
+          cd daisy-src
+          # Set git pull to rebase
+          git config pull.rebase true
+          git checkout master
+          git pull
+          git fetch --tags
+          git checkout ${{ matrix.tags }}
+          # Copy changelog to main
+          cp CHANGELOG.md ../CHANGELOG.md
+          cd ..
+
+      - name: Build package
+        run: |
+          npm run build:minify
+
+      - name: Checkout daisy master
+        run: |
+          cd daisy-src
+          git checkout master
+          cd ..
+
+      - name: Update processed tag
+        run: |
+          echo ${{ matrix.tags }} >> ${{ env.SKIP_TAGS_FILE }}
+
+      - name: Update package.json version
+        run: npm version ${{ matrix.tags }} --allow-same-version --no-git-tag-version
+
+      - name: Publish package
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          access: public
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -A
+          git commit -m "[skip actions] Update daisy to ${{ matrix.tags }}"
+
+      - name: Tag
+        run: |
+          git tag ${{ matrix.tags }}
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN}}
+          branch: main
+          tags: true
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: Daisy ${{ matrix.tags }}
+          tag: ${{ matrix.tags }}
+          body: |
+            ![Checkout daisy release](https://github.com/saadeghi/daisyui/releases/tag/${{ matrix.tags }})
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}

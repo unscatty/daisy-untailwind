@@ -1,0 +1,3 @@
+[submodule "daisy-src"]
+	path = daisy-src
+	url = https://github.com/saadeghi/daisyui
