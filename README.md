@@ -38,6 +38,7 @@ const {} = require('daisy-untailwind')
 ## TODO
 - [ ] Add support for versions below 3.6.0
 - [ ] Add tests
+- [ ] Add job to parse tag from the commit message
 - [ ] Fully fledged package with all the styles, util functions, etc.
 
 
